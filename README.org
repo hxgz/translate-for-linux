@@ -1,0 +1,12 @@
+* 描述
+基于 https://github.com/idning/youdao-dict-for-ubuntu 更改.
+* 截图
+[[./imgs/example_1.jpg]]
+* 功能
+1. 划词翻译
+2. 基于有道翻译数据
+3. 可关闭取词
+* 使用
+1. pywebkitgtk pygtk  python2.7
+2. 下载后直接运行. ./lislate.py 即可
+
