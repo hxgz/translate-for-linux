@@ -14,16 +14,17 @@ pygtk.require('2.0')
 import gtk
 import gobject
 import webkit
-from linconf import *
-import youdao_trans
+import linconf
+import trans_engine
 
-logging.basicConfig(filename=LOG_PATH, level=logging.DEBUG)
+#logging.basicConfig(filename=LOG_PATH, level=logging.DEBUG)
 class WebView(webkit.WebView):
     def __init__(self):
         webkit.WebView.__init__(self)
         settings = self.get_settings()
         settings.set_property('enable-universal-access-from-file-uris', True)
         settings.set_property('enable-file-access-from-file-uris', True)
+        settings.set_property('default-encoding',"utf-8")
         #settings.set_property('auto-resize-window', True)
         self.set_size_request(300,150)
         self.connect("navigation-policy-decision-requested",self._on_open_link)
@@ -36,7 +37,6 @@ class WebView(webkit.WebView):
             import webbrowser
             webbrowser.open(uri)
             return True
-        return True
     
 class EventBox(gtk.EventBox):
     def __init__(self):
@@ -65,41 +65,27 @@ class EventBox(gtk.EventBox):
                 return False
 
             word = m.group(0).lower()
+            x, y, mods = self.get_screen().get_root_window().get_pointer()
+            #超出边界时,
+            if x+self.size_request()[0]+15>self.get_screen().get_width():
+                x=self.get_screen().get_width()-self.size_request()[0]-15
+            if y+self.size_request()[1]+10>self.get_screen().get_height():
+                y=self.get_screen().get_height()-self.size_request()[1]-10
+            self.get_toplevel().move(x+15, y+10)
+            self.get_toplevel().show()
+
             self.query_text(text)
         return False
     def query_text(self, text):
         import urllib
         text_urlencode=urllib.quote_plus(text)
-        translation = youdao_trans.query_sentence(text)
-        x, y, mods = self.get_screen().get_root_window().get_pointer()
-        #超出边界时,
-        if x+self.size_request()[0]+15>self.get_screen().get_width():
-            x=self.get_screen().get_width()-self.size_request()[0]-15
-        if y+self.size_request()[1]+10>self.get_screen().get_height():
-            y=self.get_screen().get_height()-self.size_request()[1]-10
-        self.get_toplevel().move(x+15, y+10)
-        self.get_toplevel().show()
-        html = '''
-        <style>
-        .add_to_wordbook {
-        background: url('http://shared.ydstatic.com/r/2.0/p/fanyi-logo-s.png') no-repeat;
-        background-size: 120px 24px;
-        display: inline-block;
-        vertical-align: top;
-        width: 50px;
-        padding-top: 26px;
-        margin-left: .5em;
-        }
-        </style>
-
-        <h3 style="margin:0em;color:#AAC0C0;">有道翻译
-        <a href="http://fanyi.youdao.com/translate?i=%(text_urlencode)s&keyfrom=dict.top" id="wordbook" class="add_to_wordbook" title="浏览器中打开"">
-        </a>
-        </h3>
-        %(translation)s
-        ''' % locals()
-        #self.view.load_uri("file:///tmp/")
-        self.view.load_string(html,"text/html","utf-8","")
+        translation = ""
+        if linconf.translate_engine == "google":
+            trans_engine.google().query(text)
+        else:
+            trans_engine.youdao().query(text)
+        self.view.open("file://%s" % linconf.result_html)
+        #self.view.load_string(html,"text/html","utf-8","")
         self.view.reload()
         self.popuptime = time.time()
 
@@ -170,7 +156,7 @@ class DictStatusIcon:
     def __init__(self,dict):
         self.dict=dict
         self.statusicon = gtk.StatusIcon()
-        self.statusicon.set_from_file(LOGO)
+        self.statusicon.set_from_file(linconf.LOGO)
         self.statusicon.connect("popup-menu", self.right_click_event)
         #self.statusicon.connect("activate", self.right_click_event)
         self.statusicon.set_tooltip("translate")
@@ -179,8 +165,6 @@ class DictStatusIcon:
         #window = gtk.Window()
         #window.connect("destroy", lambda w: gtk.main_quit())
         #window.show_all()
-
-    def right_click_event(self, icon, button, time):
         self.menu = gtk.Menu()
 
         itemlist = [(u'About', self.show_about_dialog),
@@ -190,10 +174,21 @@ class DictStatusIcon:
         self.EnableTransMenu.set_active(self.does_trans)
         self.EnableTransMenu.connect('toggled', self.trans_or_not_menu_view)
         self.menu.append(self.EnableTransMenu)
-        # radio = gtk.RadioMenuItem(None, "Radio Menu Item")
-        # radio.set_active(True)
-        # radio.show()
-        # self.menu.append(radio)
+
+
+        engine_menu=gtk.Menu()
+        google_item=gtk.RadioMenuItem(None,"google")
+        youdao_item=gtk.RadioMenuItem(google_item,"有道")
+        #youdao_item.set_active(True)
+        engine_menu.add(google_item)
+        engine_menu.add(youdao_item)        
+        engine_menu_item = gtk.MenuItem("搜索引擎")
+        google_item.connect('activate', self._engine_select,"google")
+        youdao_item.connect('activate', self._engine_select,"youdao")
+        youdao_item.set_active(True)
+        engine_menu_item.set_submenu(engine_menu)
+        self.menu.add(engine_menu_item)
+
         for text, callback in itemlist:
             item = gtk.MenuItem(text)
             item.connect('activate', callback)
@@ -201,14 +196,18 @@ class DictStatusIcon:
             self.menu.append(item)
 
         self.menu.show_all()
-        self.menu.popup(None, None, gtk.status_icon_position_menu, button, time, self.statusicon)
+    def right_click_event(self, icon, button, time):
 
+        self.menu.popup(None, None, gtk.status_icon_position_menu, button, time, self.statusicon)
+    def _engine_select(self,mrmi,data):
+        if mrmi.active:
+            linconf.translate_engine=data
     def show_about_dialog(self, widget):
         about_dialog = gtk.AboutDialog()
 
         about_dialog.set_destroy_with_parent(True)
         about_dialog.set_name("translation for linux")
-        about_dialog.set_version(VERSION)
+        about_dialog.set_version(linconf.VERSION)
         about_dialog.set_authors(["OOO"])
 
         about_dialog.run()
@@ -222,7 +221,7 @@ def main():
     gtk.main()
 
 if __name__ == "__main__":
-    f=open(LOCK_PATH, 'w')
+    f=open(linconf.LOCK_PATH, 'w')
     try:
         fcntl.flock(f.fileno(), fcntl.LOCK_EX|fcntl.LOCK_NB)
     except:
