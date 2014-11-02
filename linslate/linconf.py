@@ -9,7 +9,7 @@ result_dir=PWD+'/local/'
 #main
 template_html=result_dir+'result'
 result_html=result_dir+'result.html'
-translate_engine="google"
+translate_engine="baidu"
 ##youdao engine
 #翻译的图标,显示title
 yd_logo=result_dir+"/youdao.png"
@@ -18,4 +18,7 @@ yd_title="有道翻译"
 google_logo=result_dir+"/google.png"
 google_title="Google翻译"
 http_proxy='127.0.0.1:8087'
+##baidu engine
+baidu_logo=result_dir+"/baidu.jpg"
+baidu_title="百度翻译"
 ## engine

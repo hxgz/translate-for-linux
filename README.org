@@ -1,12 +1,16 @@
 * 描述
 基于 https://github.com/idning/youdao-dict-for-ubuntu 更改.
+这是个画句翻译工具,可用翻译引擎:有道,google,百度
 * 截图
 [[./imgs/example_1.jpg]]
 * 功能
 1. 划词翻译
-2. 基于有道翻译数据
-3. 可关闭取词
+2. 菜单可选有道翻译,百度翻译,google翻译
+3. 访问google,可配置http代理翻墙翻译
+4. 可关闭取词
+5. 提供desktop实例.
 * 使用
 1. pywebkitgtk pygtk  python2.7
-2. 下载后直接运行. ./lislate.py 即可
+2. 下载后直接运行. ./linslate.py 即可
+3. 需要自定义配置,可以更改linconf.py.
 

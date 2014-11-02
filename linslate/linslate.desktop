@@ -1,8 +1,8 @@
 [Desktop Entry]
-Name=lislate
+Name=linslate
 Name[zh_CN]=翻译工具
-Icon=/home/eric/own/github/translate-for-linux/lislate/lislate.png
-Exec=/home/eric/own/github/translate-for-linux/lislate/lislate.py
+Icon=/home/eric/own/github/translate-for-linux/linslate/linslate.png
+Exec=/home/eric/own/github/translate-for-linux/linslate/linslate.py
 StartupNotify=true
 Terminal=false
 Type=Application

@@ -82,6 +82,8 @@ class EventBox(gtk.EventBox):
         translation = ""
         if linconf.translate_engine == "google":
             trans_engine.google().query(text)
+        elif linconf.translate_engine == "baidu":
+            trans_engine.baidu().query(text)
         else:
             trans_engine.youdao().query(text)
         self.view.open("file://%s" % linconf.result_html)
@@ -179,13 +181,19 @@ class DictStatusIcon:
         engine_menu=gtk.Menu()
         google_item=gtk.RadioMenuItem(None,"google")
         youdao_item=gtk.RadioMenuItem(google_item,"有道")
-        #youdao_item.set_active(True)
-        engine_menu.add(google_item)
-        engine_menu.add(youdao_item)        
-        engine_menu_item = gtk.MenuItem("搜索引擎")
+        baidu_item=gtk.RadioMenuItem(google_item,"百度")
         google_item.connect('activate', self._engine_select,"google")
         youdao_item.connect('activate', self._engine_select,"youdao")
-        youdao_item.set_active(True)
+        baidu_item.connect('activate', self._engine_select,"baidu")
+        youdao_item.set_active(linconf.translate_engine=="youdao")
+        google_item.set_active(linconf.translate_engine=="google")
+        baidu_item.set_active(linconf.translate_engine=="baidu")
+
+        engine_menu.add(google_item)
+        engine_menu.add(youdao_item)
+        engine_menu.add(baidu_item)        
+        
+        engine_menu_item = gtk.MenuItem("搜索引擎")        
         engine_menu_item.set_submenu(engine_menu)
         self.menu.add(engine_menu_item)
 
@@ -197,7 +205,6 @@ class DictStatusIcon:
 
         self.menu.show_all()
     def right_click_event(self, icon, button, time):
-
         self.menu.popup(None, None, gtk.status_icon_position_menu, button, time, self.statusicon)
     def _engine_select(self,mrmi,data):
         if mrmi.active:
