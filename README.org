@@ -2,9 +2,9 @@
 基于 https://github.com/idning/youdao-dict-for-ubuntu 更改.
 这是个画句翻译工具,可用翻译引擎:有道,google,百度
 * 截图
-[[./imgs/example_baiudu.jpg]]
-[[./imgs/example_google.jpg]]
-[[./imgs/example_youdao.jpg]]
+[[./imgs/example-baiudu.jpg]]
+[[./imgs/example-google.jpg]]
+[[./imgs/example-youdao.jpg]]
 * 功能
 1. 划词翻译
 2. 菜单可选有道翻译,百度翻译,google翻译
