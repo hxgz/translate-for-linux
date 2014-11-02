@@ -2,8 +2,10 @@
 基于 https://github.com/idning/youdao-dict-for-ubuntu 更改.
 这是个画句翻译工具,可用翻译引擎:有道,google,百度
 * 截图
-[[./imgs/example-baiudu.png]]
+[[./imgs/example-baidu.png]]
+
 [[./imgs/example-google.png]]
+
 [[./imgs/example-youdao.png]]
 * 功能
 1. 划词翻译
